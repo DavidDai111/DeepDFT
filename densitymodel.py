@@ -5,10 +5,8 @@ import mindspore as ms
 from mindspore import nn, ops
 import layer
 from layer import ShiftedSoftplus
-import numpy as np
 
 
-# 接口一致
 class DensityModel(nn.Cell):
     def __init__(
         self,
@@ -40,7 +38,6 @@ class DensityModel(nn.Cell):
         return probe_result
 
 
-# 接口一致
 class PainnDensityModel(nn.Cell):
     def __init__(
         self,
@@ -161,7 +158,6 @@ class ProbeMessageModel(nn.Cell):
             iri = ops.norm(dp_dxyz, dim=2) / (ops.pow(probe_output, 1.1))
             grad_probe_outputs["iri"] = iri
 
-
         if compute_dori:
             norm_grad_2 = ops.norm(dp_dxyz / ops.unsqueeze(probe_output, 2), dim=2) ** 2
 
@@ -218,7 +214,7 @@ class ProbeMessageModel(nn.Cell):
         edge_offset = ops.cumsum(
             ops.cat(
                 (
-                    ms.Tensor([0], dtype=ms.int32),  # device=input_dict["num_nodes"].device
+                    ms.Tensor([0], dtype=ms.int32),
                     input_dict["num_nodes"][:-1],
                 )
             ),
@@ -335,7 +331,7 @@ class AtomRepresentationModel(nn.Cell):
         edge_offset = ops.cumsum(
             ops.cat(
                 (
-                    ms.Tensor([0], dtype=ms.int32),  # device=input_dict["num_nodes"].device
+                    ms.Tensor([0], dtype=ms.int32),
                     input_dict["num_nodes"][:-1],
                 )
             ),
@@ -433,7 +429,7 @@ class PainnAtomRepresentationModel(nn.Cell):
         nodes_vector = ops.zeros(
             (nodes_scalar.shape[0], 3, self.hidden_state_size),
             dtype=nodes_scalar.dtype
-        )   # device=nodes_scalar.device
+        )
 
         # Compute edge distances
         edges_distance, edges_diff = layer.calc_distance(

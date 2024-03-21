@@ -1,4 +1,4 @@
-from typing import Tuple, List  # typing用于注解变量，方便程序理解
+from typing import Tuple, List
 import itertools
 import numpy as np
 import mindspore as ms
@@ -7,12 +7,10 @@ from mindspore import nn, ops
 def pad_and_stack(tensors: List[ms.Tensor]):
     """Pad list of tensors if tensors are arrays and stack if they are scalars"""
     if tensors[0].shape:
-        # 找到最大的序列长度
         max_len = max(tensor.shape[0] for tensor in tensors)
-        # 使用 Pad 操作进行填充
         padded_tensors = [ops.pad(tensor, [0, max_len - tensor.shape[0]], value=0) for tensor in tensors]
-        # 使用 Stack 操作将填充后的序列堆叠在一起
         return ops.Stack(axis=0)(padded_tensors)
+
     return ops.Stack(axis=0)(tensors)
 
 
@@ -86,7 +84,7 @@ def calc_distance_to_probe(
     displacement = displacement.squeeze(axis=1)
     neigh_pos = positions[edges[:, 0]]  # num_edges, 3
     neigh_abs_pos = neigh_pos + displacement  # num_edges, 3
-    this_pos = positions_probe[edges[:, 1]]  # 边的当前节点 num_edges, 3
+    this_pos = positions_probe[edges[:, 1]]  # num_edges, 3
     diff = this_pos - neigh_abs_pos  # num_edges, 3
     dist = ops.sqrt(
         ops.sum(ops.square(diff), dim=1, keepdim=True)
