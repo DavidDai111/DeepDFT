@@ -130,7 +130,7 @@ class ProbeMessageModel(nn.Cell):
 
         self.grad_function = ms.grad(self, grad_position=0)
 
-    def construct_Gradient(
+    def construct_and_gradients(
         self,
         input_dict: Dict[str, ms.Tensor],
         atom_representation: List[ms.Tensor],
@@ -504,7 +504,7 @@ class PainnProbeMessageModel(nn.Cell):
             nn.Dense(hidden_state_size, 1),
         )
 
-    def construct_Gradient(
+    def construct_and_gradients(
             self,
             input_dict: Dict[str, ms.Tensor],
             atom_representation_scalar: List[ms.Tensor],

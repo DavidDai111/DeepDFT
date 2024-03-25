@@ -252,9 +252,15 @@ def main():
             device_batch["num_probes"] = probe_dict["num_probes"].astype(ms.int32)
 
             if isinstance(model, densitymodel.PainnDensityModel):
-                res = model.probe_model.construct_Gradient(device_batch, atom_representation_scalar, atom_representation_vector, compute_iri=args.iri, compute_dori=args.dori, compute_hessian=args.hessian_eig)
+                res = model.probe_model.construct_and_gradients(
+                    device_batch, atom_representation_scalar, atom_representation_vector,
+                    compute_iri=args.iri, compute_dori=args.dori, compute_hessian=args.hessian_eig
+                )
             else:
-                res = model.probe_model.construct_Gradient(device_batch, atom_representation, compute_iri=args.iri, compute_dori=args.dori, compute_hessian=args.hessian_eig)
+                res = model.probe_model.construct_and_gradients(
+                    device_batch, atom_representation,
+                    compute_iri=args.iri, compute_dori=args.dori, compute_hessian=args.hessian_eig
+                )
 
             if args.iri or args.dori or args.hessian_eig:
                 density, grad_outputs = res

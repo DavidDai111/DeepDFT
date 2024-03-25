@@ -199,35 +199,14 @@ class MessageSum(nn.Cell):
             nodes = node_state[edges[:, 0]]  # Only include sender in messages
         messages = self.message_function(nodes, edge_state, edges_distance)
 
-        '''
-        if receiver_nodes is not None:
-            message_sum_list = []
-            for i in range(receiver_nodes.shape[0]):
-                # 创建一个布尔掩码，标记与当前节点相关的边
-                mask = ops.expand_dims((edges[:, 1] == i), axis=1)
-                # 根据掩码选择与当前节点相关的消息，并对它们进行求和
-                messages_for_node_i = ops.reduce_sum(messages * mask, axis=0)
-                # 将得到的消息存储到列表中
-                message_sum_list.append(messages_for_node_i)
-
-            # 使用ops.stack(axis=0)将列表中的张量堆叠成一个张量
-            message_sum = ops.stack(message_sum_list, axis=0)
-        else:
-            message_sum = ops.zeros_like(node_state)
-            message_sum = ops.index_add(message_sum, edges[:, 1], messages, 0)
-        return message_sum
-        '''
-
         # Sum messages
         if receiver_nodes is not None:
-            message_sum = ops.zeros_like(receiver_nodes)
-            # message_sum = ms.Tensor(np.zeros_like(receiver_nodes.asnumpy()))
+            message_sum = ms.Parameter(ops.zeros_like(receiver_nodes))
         else:
-            message_sum = ops.zeros_like(node_state)
-        message_sum.index_add(0, edges[:, 1], messages)
+            message_sum = ms.Parameter(ops.zeros_like(node_state))
+
+        message_sum = ops.index_add(message_sum, edges[:, 1], messages, 0)
         return message_sum
-        # message_sum = ops.index_add(message_sum, edges[:, 1], messages, 0)
-        # return message_sum
 
 
 class EdgeUpdate(nn.Cell):
@@ -328,11 +307,13 @@ class PaiNNInteraction(nn.Cell):
         ] * gate_state_vector + gate_edge_vector * ops.unsqueeze(
             edge_vector_normalised, 2
         )
+
         # Sum messages
-        message_sum_scalar = ops.zeros_like(node_state_scalar)
-        message_sum_scalar.index_add(0, edges[:, 1], messages_scalar)
-        message_sum_vector = ops.zeros_like(node_state_vector)
-        message_sum_vector.index_add(0, edges[:, 1], messages_state_vector)
+        message_sum_scalar = ms.Parameter(ops.zeros_like(node_state_scalar))
+        message_sum_scalar = ops.index_add(message_sum_scalar, edges[:, 1], messages_scalar, 0)
+        message_sum_vector = ms.Parameter(ops.zeros_like(node_state_vector))
+        message_sum_vector = ops.index_add(message_sum_vector, edges[:, 1], messages_state_vector, 0)
+
         # State transition
         new_state_scalar = node_state_scalar + message_sum_scalar
         new_state_vector = node_state_vector + message_sum_vector
@@ -405,11 +386,9 @@ class PaiNNInteractionOneWay(nn.Cell):
         )
 
         # Sum messages
-        message_sum_scalar = ops.zeros_like(receiver_node_state_scalar)
-        # message_sum_scalar.index_add(0, edges[:, 1], messages_scalar)
+        message_sum_scalar = ms.Parameter(ops.zeros_like(receiver_node_state_scalar))
         message_sum_scalar = ops.index_add(message_sum_scalar, edges[:, 1], messages_scalar, 0)
-        message_sum_vector = ops.zeros_like(receiver_node_state_vector)
-        # message_sum_vector.index_add(0, edges[:, 1], messages_state_vector)
+        message_sum_vector = ms.Parameter(ops.zeros_like(receiver_node_state_vector))
         message_sum_vector = ops.index_add(message_sum_vector, edges[:, 1], messages_state_vector, 0)
 
         # State transition
